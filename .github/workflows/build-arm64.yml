@@ -86,11 +86,10 @@ jobs:
           sudo apt-get update || true
           sudo apt-get install -y gcc-aarch64-linux-gnu || true
 
-      - name: Restore dependencies
-        run: dotnet restore --runtime linux-arm64
-
-      - name: Build and publish for linux-arm64
+      - name: Restore and publish for linux-arm64
         run: |
+          # Restore and publish only the main KurrentDB project
+          # Skip KurrentDB.UI which requires Mono runtime not available for arm64 on .NET 10 preview
           dotnet publish \
             --configuration=Release \
             --runtime=linux-arm64 \
@@ -98,7 +97,8 @@ jobs:
             --framework=net10.0 \
             --output ./publish \
             -p:ProtobufGenerate=false \
-            ./src/KurrentDB
+            -p:PublishWithoutUI=true \
+            ./src/KurrentDB/KurrentDB.csproj
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
